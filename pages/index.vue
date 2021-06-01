@@ -21,13 +21,13 @@
     .flex.mt-8
       .mb-4.text-white(class="w-1/3")
         .text-center.text-xs.text-gray-500 Portfolio at risk
-        .h-8.flex.justify-center.items-center.font-mono {{ getPortfolioRiskPercent() }}%
+        .h-8.flex.justify-center.items-center.font-mono {{ portfolioRiskPercent }}%
       .text-white(class="w-1/3")
         .text-center.text-xs Leverage to use
-        .h-11.flex.justify-center.items-center.text-3xl.font-black.font-mono {{ getLeverage() }}
+        .h-11.flex.justify-center.items-center.text-3xl.font-black.font-mono {{ Math.round(leverage) }}
       .mb-4.text-white(class="w-1/3")
         .text-center.text-xs.text-gray-500 Contracts to use
-        .h-8.flex.justify-center.items-center.font-mono {{ margin * getLeverage() }}
+        .h-8.flex.justify-center.items-center.font-mono {{ contractsToUse }}
 </template>
 
 <script>
@@ -45,11 +45,28 @@ export default {
     }
   },
 
+  computed: {
+    portfolioRiskPercent() {
+      return this.portfolioSize
+        ? formatNumber((this.risk / this.portfolioSize) * 100)
+        : 0
+    },
+    leverage() {
+      return !this.stopLossPercentage
+        ? 0
+        : (this.riskPercent / 100 / this.stopLossPercentage) * 100
+    },
+    contractsToUse() {
+      return Math.round(this.margin * this.leverage)
+    },
+  },
+
   watch: {
     portfolioSize(v) {
       if (v) {
         this.calculateMargin()
         this.calculateRisk()
+        localStorage.setItem('portfolioSize', v)
       }
     },
     margin(v) {
@@ -65,6 +82,7 @@ export default {
       } else {
         this.calculateMargin()
         this.calculateRisk()
+        localStorage.setItem('marginPercent', v)
       }
     },
 
@@ -80,8 +98,19 @@ export default {
         this.risk = ''
       } else {
         this.calculateRisk()
+        localStorage.setItem('riskPercent', v)
       }
     },
+    stopLossPercentage(v) {
+      localStorage.setItem('stopLossPercentage', v)
+    },
+  },
+
+  created() {
+    this.portfolioSize = this.getAndParse('portfolioSize')
+    this.marginPercent = this.getAndParse('marginPercent')
+    this.riskPercent = this.getAndParse('riskPercent')
+    this.stopLossPercentage = this.getAndParse('stopLossPercentage')
   },
 
   methods: {
@@ -97,16 +126,6 @@ export default {
     calculateRiskPercent() {
       this.riskPercent = (this.risk / this.margin) * 100
     },
-    getLeverage() {
-      return !this.stopLossPercentage
-        ? 0
-        : Math.round((this.riskPercent / 100 / this.stopLossPercentage) * 100)
-    },
-    getPortfolioRiskPercent() {
-      return this.portfolioSize
-        ? formatNumber((this.risk / this.portfolioSize) * 100)
-        : 0
-    },
     getRiskType() {
       const percent = this.getPortfolioRiskPercent()
 
@@ -117,6 +136,11 @@ export default {
       } else {
         return 'Dangerous'
       }
+    },
+    getAndParse(key) {
+      return localStorage.getItem(key)
+        ? parseInt(localStorage.getItem(key))
+        : ''
     },
   },
 }
