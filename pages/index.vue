@@ -126,17 +126,6 @@ export default {
     calculateRiskPercent() {
       this.riskPercent = (this.risk / this.margin) * 100
     },
-    getRiskType() {
-      const percent = this.getPortfolioRiskPercent()
-
-      if (percent <= 5) {
-        return 'Good'
-      } else if (percent > 5 && percent <= 10) {
-        return 'Risky'
-      } else {
-        return 'Dangerous'
-      }
-    },
     getAndParse(key) {
       return localStorage.getItem(key)
         ? parseInt(localStorage.getItem(key))
@@ -147,35 +136,7 @@ export default {
 </script>
 
 <style lang="sass">
-.v-popover
-  & > .trigger
-    display: block !important
-
-.tooltip
-  display: block !important
-  z-index: 10000
-
-  .tooltip-inner
-    margin-left: 16px
-    background: black
-    color: white
-    border-radius: 0.375rem
-    font-size: 12px
-    height: 38px
-    display: flex
-    align-items: center
-    padding: 0 20px
-    opacity: 0.6
-
-  &[aria-hidden='true']
-    visibility: hidden
-    opacity: 0
-    transition: opacity .3s, visibility .3s
-
-  &[aria-hidden='false']
-    visibility: visible
-    opacity: 1
-    transition: opacity .3s
+@import ~/assets/sass/tooltip.sass
 
 .custom-box-shadow
   box-shadow: rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(0 0 0 / 0%) 0px 0px 0px 0px, rgb(39 176 230 / 29%) 0px 0px 300px -52px
